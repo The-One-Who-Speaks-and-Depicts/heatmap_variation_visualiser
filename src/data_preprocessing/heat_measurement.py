@@ -17,11 +17,21 @@ def create_pattern_for_variation_type(variation_type: str) -> Pattern[str]:
 
 ####################################################==================###############################################
 
-def transform_gec_like_to_heat(input_string: str, regexps_to_clear_variation: list[Pattern[str]] = []):
+def measure_heat_in_gec_like(input_string: str, regexps_to_clear_variation: list[Pattern[str]] = []):
     """
     Takes a sequence in GEC annotation format (usually, {error=>corrected:::error_type=TYPE};
-    could be modified to {present=>expected:::variation_type=TYPE},
-    if the object of analysis is  linguistic variation
+    could also take {present=>expected:::variation_type=TYPE},
+    if the object of analysis is  linguistic variation. Returns the sequence of '_'s and 'X's,
+    with '_' denoting places in text with no variation/errors, and 'X' denoting places in text
+    where no variation/errors, interesting for user, occurs.
+
+    Arguments:
+        input_string (str): a string, annotated in GEC format
+        regexps_to_clear_variaton (list[Patterns[str]]): list of regular expressions that govern the variation/error that should be detected
+    Returns:
+        final_sequence (str): a sequence of '_'s and 'X's,
+        with '_' denoting places in text with no variation/errors, and 'X' denoting places in text
+        where no variation/errors, interesting for user, occurs.
     """
     if not isinstance(input_string, str) or not input_string.strip():
         raise ValueError("Input must be a non-empty string")
@@ -154,7 +164,7 @@ def transform_to_heat_sequence(
     input_sequence = []
     if input_transformation in ["ua_gec", "text_variation"]:
         patterns_to_detect = [create_pattern_for_variation_type(variation) for variation in variation_types]
-        input_sequence = [i for i in transform_gec_like_to_heat(input_data, patterns_to_detect) if i and i.strip()]
+        input_sequence = [i for i in measure_heat_in_gec_like(input_data, patterns_to_detect) if i and i.strip()]
     if input_transformation in ["ua_ner", "automatic_thematic_modelling", "stop_words"]:
         input_sequence = [i for i in transform_binary_tagged_sequence_to_underscore_and_X(input_data) if i and i.strip()]
     input_array = list(input_sequence)

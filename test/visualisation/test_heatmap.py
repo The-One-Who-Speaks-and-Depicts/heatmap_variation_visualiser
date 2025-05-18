@@ -19,7 +19,6 @@ class TestCreateHeatMapFromMatrix(unittest.TestCase):
         self.assertRaises(ValueError, heatmap.chunk_matrix, [[1, 2], [2, 3], [3, 4]], [1, 2, 3])
         self.assertRaises(ValueError, heatmap.chunk_matrix, [[1, 2], [2, 3], [3, 4]], 0)
         self.assertRaises(ValueError, heatmap.chunk_matrix, [[1, 2], [2, 3], [3, 4]], -1)
-        self.assertRaises(ValueError, heatmap.chunk_matrix, [[1, 2], [2, 3], [3, 4]], 5)
         self.assertRaises(ValueError, heatmap.chunk_matrix, [[1, 2], [2, 3], [3, 4, 5]], 2)
         
     
@@ -28,10 +27,18 @@ class TestCreateHeatMapFromMatrix(unittest.TestCase):
         self.assertRaises(TypeError, heatmap.chunk_matrix, "2345", 1)
         self.assertRaises(TypeError, heatmap.chunk_matrix, 2, 5)
         self.assertRaises(TypeError, heatmap.chunk_matrix, {}, 5)
+
     
-    def test_chunk_matrix_good_case(self):
+    def test_chunk_matrix_max_rows_less_than_rows_in_matrix(self):
         result = heatmap.chunk_matrix([[1, 2], [2, 3], [3, 4], [5, 6]], 2)
         expected = [np.asarray([[1, 2], [2, 3]]), np.asarray([[3, 4], [5, 6]])]
+        for idx, chunk in enumerate(result):
+            self.assertIsNone(np.testing.assert_array_equal(chunk, expected[idx]))
+
+    
+    def test_chunk_matrix_max_rows_more_than_rows_in_matrix(self):
+        result = heatmap.chunk_matrix ([[1, 2], [2, 3], [3, 4]], 5)
+        expected = [np.asarray([[1, 2], [2, 3], [3, 4]])]
         for idx, chunk in enumerate(result):
             self.assertIsNone(np.testing.assert_array_equal(chunk, expected[idx]))
 

@@ -55,17 +55,14 @@ def create_heatmap_from_matrix(
         ) -> None:
     logger.debug("Storing vis %s in %s", 
                 idx, os.path.join(output_dir, "chunk_" + str(dataset_part_idx) + "_" + str(idx)))
+    plt.figure(dpi=300, figsize=[12.8, 9.6])
     if is_continuous:
-        plt.figure(dpi=300, figsize=[12.8, 9.6])
         plt.imshow(matrix, cmap='viridis')
         plt.colorbar(shrink=0.5)
-        plt.savefig(os.path.join(output_dir,"chunk_" + str(dataset_part_idx) + "_" + str(idx)))
-        plt.close()        
     else:
-        plt.figure(dpi=300, figsize=[12.8, 9.6])
         sns.heatmap(matrix, linewidth=0.5)
-        plt.savefig(os.path.join(output_dir, "chunk_" + str(dataset_part_idx) + "_" + str(idx)))
-        plt.close()
+    plt.savefig(os.path.join(output_dir, "chunk_" + str(dataset_part_idx) + "_" + str(idx)))
+    plt.close()
 
 def create_heatmap(matrix: list[list], params = HeatmapParams(), dataset_part_idx: int = 0) -> None:
     if not os.path.exists(params.output_dir):

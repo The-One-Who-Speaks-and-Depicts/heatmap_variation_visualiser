@@ -1,8 +1,11 @@
 import datasets
 import os
 import re
+import numpy as np
 import pandas as pd
 import logging
+
+from stanza.utils.conll import CoNLL
 
 from data_preprocessing.thematic_modelling import tag_sentences_for_topics
 
@@ -76,6 +79,27 @@ def load_text_by_copies(source_directory: str) -> list[list[str]]:
             data.append([line.strip('\n') for line in inp.readlines() if line and line.strip()])
     return data
 
+def load_pos(source_directory: str, rapidity_rate: int) -> list[list[int]]:
+    files = [os.path.join(source_directory, f) for f in os.listdir(source_directory) if (os.path.isfile(os.path.join(source_directory, f)) and '.conllu' in f)]
+    data = []
+    for f in files:
+        doc = CoNLL.conll2doc(f)
+        result_matrix = []
+        for sent in doc.sentences:
+            row = []
+            for token in sent.tokens:
+                for word in token.words:
+                    misc_keys = word.misc.split('|')
+                    for key in misc_keys:
+                        if 'PosRapidity' in key:
+                            rate = int(key.split('=')[1]) + rapidity_rate
+                            heat = np.empty(len(word.text) + 2, dtype='int') 
+                            heat.fill(rate)
+                            row.extend(heat)
+            result_matrix.append(row)
+        data.append(result_matrix)
+    return data
+
 def load_source_by_type(type, **kwargs):
     if type == "ua_gec":
         if not kwargs.get("source_dir"):
@@ -97,7 +121,12 @@ def load_source_by_type(type, **kwargs):
         if not kwargs.get("source_dir"):
             raise ValueError("Source directory is required for text_variation mode")
         return load_text_by_copies(kwargs.get("source_dir"))
-        
+    if type == "pos":
+        if not kwargs.get("source_dir"):
+            raise ValueError("Source directory is required for PoS errata visualisation mode")
+        if not kwargs.get("rapidity_rate"):
+            raise ValueError("Rapidity rate is required for PoS errata visualisation mode")
+        return load_pos(kwargs.get("source_dir"), kwargs.get("rapidity_rate"))
         
     raise ValueError("Unknown source type")                    
 

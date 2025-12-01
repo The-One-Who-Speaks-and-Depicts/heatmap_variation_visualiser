@@ -13,7 +13,8 @@ def data_preprocessing_pipeline(cfg: ConfigurationParameters) -> list[list]:
         cfg.data_type, 
         source_dir = cfg.source_directory, 
         text_separator = cfg.text_separator, 
-        lda_params = cfg.lda_params
+        lda_params = cfg.lda_params,
+        rapidity_rate = cfg.rapidity_rate
         )
     variation_types = load_variation_types(cfg.variation_type)
     if cfg.data_type == "text_variation":
@@ -25,14 +26,23 @@ def data_preprocessing_pipeline(cfg: ConfigurationParameters) -> list[list]:
                     s, cfg.data_type, variation_types, cfg.rapidity_rate, cfg.clustered) for s in t
                 )
             )
-        equialized_heat_texts = []
+        equalized_heat_texts = []
         for t in heat_texts:
-            equialized_heat_texts.append(
+            equalized_heat_texts.append(
                 equalize_row_length_in_sentence_matrix(
                     t, cfg.rapidity_rate, cfg.equalizer_params
                     )
             )
-        return equialized_heat_texts
+        return equalized_heat_texts
+    if cfg.data_type == "pos":
+        equalized_heat_files = []
+        for f in source:
+            equalized_heat_files.append(
+                equalize_row_length_in_sentence_matrix(
+                    f, cfg.rapidity_rate, cfg.equalizer_params
+                    )
+            )
+        return equalized_heat_files
     heat_sequences = [
         transform_to_heat_sequence(
             s, cfg.data_type, variation_types, cfg.rapidity_rate, cfg.clustered) for s in source

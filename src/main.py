@@ -23,7 +23,8 @@ if __name__ == '__main__':
         "ua_gec",
         "ua_ner",
         "automatic_thematic_modelling",
-        "text_variation"], default="ua_gec", required=True)
+        "text_variation",
+        "pos"], default="ua_gec", required=True)
     parser.add_argument("--rapidity_rate", "-r", help="Rapidity rate", default="3")
     parser.add_argument("--clustered", "-c", choices=["1", "0"], help="Clustered", default="0")
     parser.add_argument("--source_directory", "-s", help="Source directory")

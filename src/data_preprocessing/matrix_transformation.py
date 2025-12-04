@@ -11,7 +11,7 @@ class EqualizerParams:
     func_path: str = "numpy.max"
     percentile: int | None = None
 
-def batch_sentence_to_threshold(sentence: list, threshold: int, rapidity_rate: int) -> list[list]:
+def batch_sentence_to_threshold(sentence: list, threshold: int, rapidity_rate: int, label_sequence: bool = False) -> list[list]:
     if not isinstance(sentence, list):
         raise ValueError("Input should be a list")
     if len(sentence) < 1:
@@ -29,6 +29,9 @@ def batch_sentence_to_threshold(sentence: list, threshold: int, rapidity_rate: i
         return [sentence]
     if len(sentence) < threshold:
         filled_sentence = deepcopy(sentence)
+        if label_sequence:
+            filled_sentence.extend(' ' * (threshold - len(sentence)))
+            return [filled_sentence]
         filled_sentence.extend([negative_rapidity] * (threshold - len(sentence)))
         return [filled_sentence]
     result = []
@@ -52,7 +55,8 @@ def equalizer_function_wrapper(
 
 def equalize_row_length_in_sentence_matrix(
         data: list[list], rapidity_rate: int,
-        equalizer_params: EqualizerParams = EqualizerParams()) -> list[list]:
+        equalizer_params: EqualizerParams = EqualizerParams(),
+        label_sequence: bool = False) -> list[list]:
     if not isinstance(data, list):
         raise ValueError("Input should be a list")
     if len(data) < 1:
@@ -76,7 +80,7 @@ def equalize_row_length_in_sentence_matrix(
     for i in data:
         matrix_with_equalized_sentence_length.extend(
             batch_sentence_to_threshold(
-                i, threshold_value, rapidity_rate
+                i, threshold_value, rapidity_rate, label_sequence
             )
         )
     return matrix_with_equalized_sentence_length

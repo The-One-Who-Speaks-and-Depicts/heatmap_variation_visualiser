@@ -5,6 +5,8 @@ import numpy as np
 import pandas as pd
 import logging
 
+from dataclasses import dataclass
+
 from stanza.utils.conll import CoNLL
 
 from data_preprocessing.thematic_modelling import tag_sentences_for_topics
@@ -100,6 +102,34 @@ def load_pos(source_directory: str, rapidity_rate: int) -> list[list[int]]:
         data.append(result_matrix)
     return data
 
+@dataclass
+class LemmaForHeat:
+    tagged_lemma: str = ""
+    lemma_heat: str = ""
+
+
+def load_lemma(source_directory: str) -> list[list[LemmaForHeat]]:
+    files = [os.path.join(source_directory, f) for f in os.listdir(source_directory) if (os.path.isfile(os.path.join(source_directory, f)) and '.conllu' in f)]
+    data = []
+    for f in files:
+        doc = CoNLL.conll2doc(f)
+        result_matrix = []
+        for sent in doc.sentences:
+            row = []
+            for token in sent.tokens:
+                for word in token.words:
+                    misc_keys = word.misc.split('|')
+                    lemma = LemmaForHeat()
+                    for key in misc_keys:
+                        if 'LemmaErrorSpots' in key:
+                            lemma.lemma_heat = key.split('=')[1]
+                        if 'TaggedLemma' in key:
+                            lemma.tagged_lemma = key.split('=')[1]
+                    row.append(lemma)
+            result_matrix.append(row)
+        data.append(result_matrix)
+    return data
+
 def load_source_by_type(type, **kwargs):
     if type == "ua_gec":
         if not kwargs.get("source_dir"):
@@ -127,6 +157,9 @@ def load_source_by_type(type, **kwargs):
         if not kwargs.get("rapidity_rate"):
             raise ValueError("Rapidity rate is required for PoS errata visualisation mode")
         return load_pos(kwargs.get("source_dir"), kwargs.get("rapidity_rate"))
-        
+    if type == "lemma":
+        if not kwargs.get("source_dir"):
+            raise ValueError("Source directory is required for PoS errata visualisation mode")
+        return load_lemma(kwargs.get("source_dir"))
     raise ValueError("Unknown source type")                    
 

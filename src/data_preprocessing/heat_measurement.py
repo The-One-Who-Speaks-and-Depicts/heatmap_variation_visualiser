@@ -167,8 +167,10 @@ def transform_to_heat_sequence(
         input_sequence = [i for i in measure_heat_in_gec_like(input_data, patterns_to_detect) if i and i.strip()]
     if input_transformation in ["ua_ner", "automatic_thematic_modelling", "stop_words"]:
         input_sequence = [i for i in transform_binary_tagged_sequence_to_underscore_and_X(input_data) if i and i.strip()]
+    if input_transformation == "lemma":
+        input_sequence = input_data
     input_array = list(input_sequence)
-    output_array = [0 for i in range(len(input_array))]
+    output_array = [0 for _ in range(len(input_array))]
     for idx, val in enumerate(input_array):
         if val == 'X':
             if clustered:

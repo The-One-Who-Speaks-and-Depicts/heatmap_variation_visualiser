@@ -89,7 +89,7 @@ def create_heatmap_with_labels(matrix: list[list], symbols: list[list], params =
                     ))
     fig.update_layout(
     autosize=False,
-    width=2000,
+    width=4000,
     height=2000,
     margin=dict(
         l=50,

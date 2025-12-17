@@ -64,8 +64,6 @@ def equalize_row_length_in_sentence_matrix(
     if not all(isinstance(i, list) for i in data):
         raise ValueError("Input should consist of lists")
     if not all(len(i) > 0 for i in data):
-        for i in data:
-            print(len(i))
         raise ValueError("Input should consist of non-empty lists")
     if not isinstance(rapidity_rate, int):
         raise ValueError("Rapidity rate should be an integer")

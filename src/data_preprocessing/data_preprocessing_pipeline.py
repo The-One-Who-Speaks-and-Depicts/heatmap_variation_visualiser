@@ -1,7 +1,7 @@
 import logging
 
 from configuration import ConfigurationParameters
-from data_preprocessing.data_loading import load_source_by_type, LemmaForHeat
+from data_preprocessing.data_loading import load_source_by_type
 from data_preprocessing.configuration_loading import load_variation_types
 from data_preprocessing.heat_measurement import transform_to_heat_sequence
 from data_preprocessing.matrix_transformation import equalize_row_length_in_sentence_matrix
@@ -17,14 +17,19 @@ def data_preprocessing_pipeline(cfg: ConfigurationParameters) -> list[list] | tu
         rapidity_rate = cfg.rapidity_rate
         )
     variation_types = load_variation_types(cfg.variation_type)
-    if cfg.data_type == "text_variation":
+    if "text_variation" in cfg.data_type:
         heat_texts = []
-        for t in source:
+        for t in source[0]:
             heat_texts.append(
                 list(
                     transform_to_heat_sequence(
                     s, cfg.data_type, variation_types, cfg.rapidity_rate, cfg.clustered) for s in t
                 )
+            )
+        heat_labels = []
+        for t in source[1]:
+            heat_labels.append(
+                [list(s) for s in t]
             )
         equalized_heat_texts = []
         for t in heat_texts:
@@ -33,7 +38,14 @@ def data_preprocessing_pipeline(cfg: ConfigurationParameters) -> list[list] | tu
                     t, cfg.rapidity_rate, cfg.equalizer_params
                     )
             )
-        return equalized_heat_texts
+        equalized_heat_labels = []
+        for t in heat_labels:
+            equalized_heat_labels.append(
+                equalize_row_length_in_sentence_matrix(
+                    t, cfg.rapidity_rate, cfg.equalizer_params, True
+                    )
+            )
+        return (equalized_heat_texts, equalized_heat_labels)
     if cfg.data_type == "pos":
         equalized_heat_files = []
         for f in source:
@@ -50,7 +62,6 @@ def data_preprocessing_pipeline(cfg: ConfigurationParameters) -> list[list] | tu
             heat_labels.append(
                 [list(' '.join([w.tagged_lemma for w in s])) for s in t]
             )
-            print(heat_labels)
             heat_texts.append(
                 list(
                     [transform_to_heat_sequence(

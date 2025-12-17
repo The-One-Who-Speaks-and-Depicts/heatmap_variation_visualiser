@@ -7,6 +7,7 @@ import logging
 
 from dataclasses import dataclass
 
+from conllu import parse
 from stanza.utils.conll import CoNLL
 
 from data_preprocessing.thematic_modelling import tag_sentences_for_topics
@@ -71,6 +72,20 @@ def load_conllu_data_for_thematic_modelling(source_directory: str, text_separato
             data.append((current_text, current_id))
     df = pd.DataFrame(data, columns=['text', 'lect'])
     return (df, sentences)
+
+def load_conllu_variation(source_directory: str) -> list[list[str]]:
+    files = [os.path.join(source_directory, f) for f in os.listdir(source_directory) if (os.path.isfile(os.path.join(source_directory, f)) and '.conllu' in f)]
+    data = []
+    labels = []
+    for f in files:
+        logger.debug("Loading file %s", f)
+        with open(f, "r", encoding='utf-8') as inp:
+            sents = parse(inp.read())
+            variation_sents = [i.metadata['variation_text'] for i in sents]
+            data.append(variation_sents)
+            standard_sents = [i.metadata['standard_text'] for i in sents]
+            labels.append(standard_sents)
+    return (data, labels) 
 
 def load_text_by_copies(source_directory: str) -> list[list[str]]:
     files = [os.path.join(source_directory, f) for f in os.listdir(source_directory) if (os.path.isfile(os.path.join(source_directory, f)) and '.txt' in f)]
@@ -151,6 +166,10 @@ def load_source_by_type(type, **kwargs):
         if not kwargs.get("source_dir"):
             raise ValueError("Source directory is required for text_variation mode")
         return load_text_by_copies(kwargs.get("source_dir"))
+    if type == "conllu_text_variation":
+        if not kwargs.get("source_dir"):
+            raise ValueError("Source directory is required for text_variation mode")
+        return load_conllu_variation(kwargs.get("source_dir"))
     if type == "pos":
         if not kwargs.get("source_dir"):
             raise ValueError("Source directory is required for PoS errata visualisation mode")

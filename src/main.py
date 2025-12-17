@@ -24,6 +24,7 @@ if __name__ == '__main__':
         "ua_ner",
         "automatic_thematic_modelling",
         "text_variation",
+        "conllu_text_variation",
         "pos",
         "lemma"], default="ua_gec", required=True)
     parser.add_argument("--rapidity_rate", "-r", help="Rapidity rate", default="3")

@@ -8,7 +8,6 @@ logger = logging.getLogger('heatmap_creator')
 ####################################################==================###############################################
 
 def create_pattern_for_variation_type(variation_type: str) -> Pattern[str]:
-    # (G/[^}]+|Spelling)
     final_pattern = re.compile("{{([^=>]+)=>([^:]+):::(variation|error)_type={}}}".format(variation_type))
     logger.info("Variation type: %s, final_pattern: %s", variation_type, final_pattern)
     return final_pattern
@@ -51,7 +50,7 @@ def measure_heat_in_gec_like(input_string: str, regexps_to_clear_variation: list
     transformed_sequence = input_string
 
     for pattern in regexps_to_clear_variation:
-        transformed_sequence = re.sub(pattern, replace_with_X, input_string)
+        transformed_sequence = pattern.sub(replace_with_X, transformed_sequence)
 
     transformed_sequence = re.sub(pattern_for_others, replace_with_underscore, transformed_sequence)
 
@@ -162,7 +161,7 @@ def transform_to_heat_sequence(
     if rapidity_rate < 3:
         raise ValueError('Rapidity rate must be at least 3')
     input_sequence = []
-    if input_transformation in ["ua_gec", "text_variation"]:
+    if input_transformation in ["ua_gec", "text_variation", "conllu_text_variation"]:
         patterns_to_detect = [create_pattern_for_variation_type(variation) for variation in variation_types]
         input_sequence = [i for i in measure_heat_in_gec_like(input_data, patterns_to_detect) if i and i.strip()]
     if input_transformation in ["ua_ner", "automatic_thematic_modelling", "stop_words"]:

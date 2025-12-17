@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 logger = logging.getLogger("heatmap_creator")
 
@@ -55,17 +56,14 @@ def create_heatmap_from_matrix(
         ) -> None:
     logger.debug("Storing vis %s in %s", 
                 idx, os.path.join(output_dir, "chunk_" + str(dataset_part_idx) + "_" + str(idx)))
+    plt.figure(dpi=300, figsize=[12.8, 9.6])
     if is_continuous:
-        plt.figure(dpi=300, figsize=[12.8, 9.6])
         plt.imshow(matrix, cmap='viridis')
         plt.colorbar(shrink=0.5)
-        plt.savefig(os.path.join(output_dir,"chunk_" + str(dataset_part_idx) + "_" + str(idx)))
-        plt.close()        
     else:
-        plt.figure(dpi=300, figsize=[12.8, 9.6])
         sns.heatmap(matrix, linewidth=0.5)
-        plt.savefig(os.path.join(output_dir, "chunk_" + str(dataset_part_idx) + "_" + str(idx)))
-        plt.close()
+    plt.savefig(os.path.join(output_dir, "chunk_" + str(dataset_part_idx) + "_" + str(idx)))
+    plt.close()
 
 def create_heatmap(matrix: list[list], params = HeatmapParams(), dataset_part_idx: int = 0) -> None:
     if not os.path.exists(params.output_dir):
@@ -76,3 +74,30 @@ def create_heatmap(matrix: list[list], params = HeatmapParams(), dataset_part_id
             val, 
             params.output_dir, params.is_continuous,
             idx, dataset_part_idx)
+        
+def create_heatmap_with_labels(matrix: list[list], symbols: list[list], params = HeatmapParams(), dataset_part_idx: int = 0) -> None:
+    logger.debug("Storing vis %s in %s", 
+                dataset_part_idx, os.path.join(params.output_dir, "chunk_" + str(dataset_part_idx) + "_" + str(dataset_part_idx)))
+    
+    fig = go.Figure(data=go.Heatmap(
+                    z=matrix,
+                    text=symbols,
+                    texttemplate="%{text}",
+                    textfont={"size":15}), layout=go.Layout(
+                        title = "title",
+                        yaxis=dict(visible=False,autorange='reversed')
+                    ))
+    fig.update_layout(
+    autosize=False,
+    width=4000,
+    height=2000,
+    margin=dict(
+        l=50,
+        r=50,
+        b=100,
+        t=100,
+        pad=4
+    ),
+    paper_bgcolor="LightSteelBlue",
+)
+    fig.write_image(os.path.join(params.output_dir, "chunk_" + str(dataset_part_idx) + ".png"), format="png")
